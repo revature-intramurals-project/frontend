@@ -1,0 +1,19 @@
+body {
+    background-color: black;
+    text-align: center;
+    font-size: large;
+    color: white;
+}
+
+table {
+    margin: auto;
+}
+
+a {
+    margin-top: 20px;
+    display: inline-block;
+    color: black;
+    background: white;
+    text-decoration: none;
+    padding: 20px;
+}

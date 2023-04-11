@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="season-view.css">
+    <title>Season</title>
+</head>
+<body>
+
+    <table>
+        <thead>
+            <tr><th>Season Name</th></tr>
+        </thead>
+        <tbody id="seasonTableBody">
+
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+    
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    async function populateTable(){
+        const seasons = await retrieveAllSeasons();
+        const seasonTableBody = document.getElementById("seasonTableBody")
+        
+        for(const season of seasons){
+            const tr = seasonTableRowHTML(season)
+            seasonTableBody.insertAdjacentHTML("beforeend",tr);
+        }
+    }
+
+    populateTable();
+</script>
+</html>

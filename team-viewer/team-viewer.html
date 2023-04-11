@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="team-viewer.css" />
+    <title>Team Application</title>
+</head>
+<body>
+    <h1></h1>
+    <table>
+        <thead>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Player / Captain</th>
+        </thead>
+        <tbody id="teammateInfo">
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script src="../team-checkers.js"></script>
+<script>
+    (async function() {
+        let team = await getTeamOfUser(JSON.parse(localStorage.getItem('user')).userId);
+        let h1 = document.getElementsByTagName('h1')[0];
+        h1.innerHTML = `Your Team, ${team.name}'s Members`;
+
+        let tbody = document.getElementById('teammateInfo');
+        let teamMembers = await retrieveUsersByTeamName(team.name);
+        for (member of teamMembers) {
+            tbody.innerHTML += teamMemberTableRowHTML(team, member);
+        }
+    })();
+</script>
+</html>

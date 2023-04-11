@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="team-form.css">
+    <title>Document</title>
+</head>
+<body>
+
+    <form>
+
+        <label>Team Name</label>
+        <input name="name" type="text">
+        <br>
+
+        <label>Captain</label>
+        <input name="captain" type="text" disabled>
+        <br>
+
+        <label>Sport</label>
+        <select name="sport">
+            <option value="basketball">Basketball</option>
+            <option value="softball">Softball</option>
+          </select>
+        <br>
+        <button>Submit</button>
+
+    </form>
+    
+</body>
+<script src="../http-requests.js"></script>
+<script>
+    document.addEventListener("submit",async function(event){
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const name = formData.get("name");
+        const captain = formData.get("captain");
+        const sport = formData.get("sport")
+       
+        const successfullyCreated = await sendTeamRegistration(name,1,"active",sport);
+
+
+        if(successfullyCreated){
+            alert("Team Created")
+        }
+
+    });
+</script>
+</html>

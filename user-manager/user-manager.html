@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="user-manager.css" />
+    <title>Manager View</title>
+</head>
+<body>
+    <h1>User Manager</h1>
+    <table>
+        <thead>
+            <tr><th>User ID</th><th>Username</th><th>Role</th></tr>
+        </thead>
+        <tbody id="userTableBody">
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    async function populateTable() {
+        let users = await retrieveAllUsers();
+        users = users.sort((element1, element2) => element1.userId - element2.userId)
+        const userTableBody = document.getElementById("userTableBody")
+        userTableBody.innerHTML = '';
+
+        for (const user of users) {
+            userTableBody.innerHTML += userTableRowHTML(user);
+        }
+    }
+
+    populateTable();
+</script>
+</html>

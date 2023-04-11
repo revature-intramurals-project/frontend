@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="user-profile.css" />
+</head>
+<body>
+    <h1>Edit User Profile</h1>
+
+    <form>
+        <label>Username</label>
+        <input name="username" type="text">
+        <br>
+
+        <label>Password</label>
+        <input name="password" type="password">
+        <br>
+
+        <label>Height (inches)</label>
+        <input name="height" type="number">
+        <br>
+
+        <label>Weight (lbs)</label>
+        <input name="weight" type="number"/>
+        <br>
+
+        <label>Profile Picture</label>
+        <input name="picture" type="text"/>
+        <br>
+
+        <label>Display Biometrics</label>
+        <input name="biometrics" type="checkbox" />
+
+        <button>Submit</button>
+
+    </form>
+    <br>
+
+    <a href="../option-page/option-page.html">Back</a>
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    const userObj = JSON.parse(localStorage.getItem('user'));
+
+    const usernameInput = document.querySelector("input[name='username']");
+    const passwordInput = document.querySelector("input[name='password']");
+    const heightInput = document.querySelector("input[name='height']");
+    const weightInput = document.querySelector("input[name='weight']");
+    const profilePictureInput = document.querySelector("input[name='picture']");
+    const biometricsCheckbox = document.querySelector("input[name='biometrics']");
+
+    passwordInput.addEventListener('focus', () => {
+        changePasswordInputType();
+    });
+
+    passwordInput.addEventListener('blur', () => {
+        changePasswordInputType();
+    });
+
+    usernameInput.value = userObj.username;
+    passwordInput.value = userObj.password;
+    heightInput.value = userObj.heightInches;
+    weightInput.value = userObj.weightLbs;
+    profilePictureInput.value = userObj.profilePic;
+    biometricsCheckbox.checked = userObj.hideBiometrics;
+</script>
+<script>
+    document.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const username = formData.get("username");
+        const password = formData.get("password");
+        const height = formData.get("height");
+        const weight = formData.get("weight");
+        const profilePicture = formData.get("picture");
+        const hideBiometrics = formData.get("biometrics") ? true : false;
+
+        if (confirm("Are you sure you want to edit your user profile?")) {
+            const user = await sendUserUpdate(username, password, height, weight, profilePicture, hideBiometrics);
+
+            if (user) {
+                alert("Update successful!")
+                localStorage.setItem('user', JSON.stringify(user));
+            } else {
+                alert("Update failed!")
+            }
+            
+        } else {
+            window.location.reload();
+        }
+    });
+</script>
+</html>

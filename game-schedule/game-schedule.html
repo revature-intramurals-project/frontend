@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="game-schedule.css">
+    <title>Game Schedules</title>
+</head>
+<body>
+
+    <table>
+        <thead>
+            <tr><th>Game ID</th><th>Date</th><th>Time EST</th><th>Venue</th><th>Home Team</th><th>Away Team</th><th>Outcome</th><th>Home Team Score</th><th>Home Team Fouls</th><th>Away Team Score</th><th>Away Team Fouls</th></th></tr>
+        </thead>
+        <tbody id="gameTableBody">
+
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+    
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    async function populateTable(){
+        const games = await retrieveAllGames();
+        const gamesAndReferees = await retrieveAllGamesAndReferees();
+
+        const gameTableBody = document.getElementById("gameTableBody")
+
+        let refereeMap = {};
+        for (gameAndReferee of gamesAndReferees) {
+            if (gameAndReferee.gameId in refereeMap && !refereeMap[gameAndReferee.gameId].includes(gameAndReferee.userId)) {
+                refereeMap[gameAndReferee.gameId].push(gameAndReferee.userId);
+            } else {
+                refereeMap[gameAndReferee.gameId] = [ gameAndReferee.userId ];
+            }
+        }
+        
+        for(const game of games){
+            game.refereeIds = refereeMap[game.gameId];
+
+            let scores = await calculateOverallScores(game)
+            game.homeTeamScore = scores[0];
+            game.awayTeamScore = scores[1];
+            game.homeTeamFouls = scores[2];
+            game.awayTeamFouls = scores[3];
+
+            const tr = gameTableRowHTML(game)
+            gameTableBody.insertAdjacentHTML("beforeend",tr);
+        }
+    }
+
+    populateTable();
+
+    function removeRefereeInfo() {
+        let refereeSections = document.querySelectorAll('section');
+        for (section of refereeSections) {
+            section.remove();
+        }
+    }
+
+    function showRefereesForGame(referees) {
+        removeRefereeInfo();
+
+        document.getElementsByTagName('body')[0].innerHTML += `<section><button onclick="removeRefereeInfo()">Close</button></section>`;
+
+        for (referee of referees) {
+            showRefereeInfo(referee);
+        }
+    }
+
+    async function calculateOverallScores(game) {
+        const existingStats = await retrieveBasketballStatsByGameId(game.gameId);
+
+        const homeTeamStats = existingStats.filter(stats => stats.teamName === game.homeTeam);
+        const awayTeamStats = existingStats.filter(stats => stats.teamName === game.awayTeam);
+
+        let homePoints = 0;
+        let homeFouls = 0;
+        for (const stat of homeTeamStats) {
+            homePoints += stat.points;
+            homeFouls += stat.fouls;
+        } 
+
+        let awayPoints = 0;
+        let awayFouls = 0;
+        for (const stat of awayTeamStats) {
+            awayPoints += stat.points;
+            awayFouls += stat.fouls;
+        } 
+
+        return [homePoints, awayPoints, homeFouls, awayFouls];
+    }
+</script>
+</html>
+

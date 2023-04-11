@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="game-form.css">
+    <title>Game Scheduling Form</title>
+</head>
+<body>
+
+    <form>
+
+        <fieldset>
+            <legend>Time and Location</legend>
+
+            <label>Venue</label>
+            <select name="venue" id="venueOptions">
+
+            </select>
+    
+    
+            <label>Time</label>
+            <input name="time" type="datetime-local">
+    
+            <br/>
+        </fieldset>
+
+        <fieldset>
+            <legend>Sport and series</legend>
+
+            <label>Season</label>
+            <select name="season" id="seasonOptions">
+
+            </select>
+    
+            <br/>
+            
+            <label>Sport</label>
+            <select name="sport" oninput="filter(event)">
+                <option value="none"></option>
+                <option value="basketball">basketball</option>
+                <option value="softball">softball</option>
+            </select>  
+
+        </fieldset>
+
+ 
+        <fieldset>
+            <legend>Teams</legend>
+
+            <label>Home Team</label>
+            <select name="home" id="homeOptions">
+
+            </select>
+    
+            <label>Away Team Team</label>
+            <select name="away" id="awayOptions">
+
+            </select>
+        </fieldset>
+
+
+        <button>Schedule</button>
+
+    </form>
+
+    <a href="../option-page/option-page.html">Back</a>
+    
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+
+    const homeTeams = document.getElementById("homeOptions");
+    const awayTeams = document.getElementById("awayOptions");
+    const venueOptionsSelect = document.getElementById("venueOptions");
+    const seasonOptionsSelect = document.getElementById("seasonOptions");
+
+    let teams = [];
+    let seasons = [];
+    let venues = [];
+
+    async function populateForm(){
+        teams = await retrieveAllTeams();
+        seasons = await retrieveAllSeasons();
+        venues = await retrieveAllVenues();
+        addOptions();
+    }
+
+
+    function filter(){
+
+        function createOptionElements(teams){
+            homeTeams.innerHTML = "";
+            awayTeams.innerHTML = "";
+           
+
+            for(const team of teams){
+                    const option = optionHTML(team.name,team.name);
+                    homeTeams.insertAdjacentHTML("beforeend", option);
+            }
+
+            for(const team of teams){
+                    const option = optionHTML(team.name,team.name);
+                    awayTeams.insertAdjacentHTML("beforeend", option);
+            }
+        }
+
+        switch(event.target.value){
+            case "basketball": createOptionElements(teams.filter(t => t.sport === "basketball")); break;
+            case "softball": createOptionElements(teams.filter(t => t.sport === "softball")); break;           
+        }
+    }
+
+
+
+    function addOptions(){
+
+        for(const venue of venues){
+            const option = document.createElement("option");
+            option.value = venue.title;
+            option.innerText = venue.title;
+            venueOptionsSelect.appendChild(option);
+        }
+
+        for(const season of seasons){
+            const option = document.createElement("option");
+            option.value = season.title;
+            option.innerText = season.title;
+            seasonOptionsSelect.appendChild(option);
+        }
+    }
+
+    document.addEventListener("submit", async function(event){
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const venueTitle = formData.get("venue");
+        const date = formData.get("time");
+        const seasonTitle = formData.get("season");
+        const sport = formData.get("sport");
+        const homeTeam = formData.get("home");
+        const awayTeam = formData.get("away");
+
+        const gameStart = Math.floor(new Date(date).getTime() / 1000);
+        
+        let savedGame = await sendGame({venueTitle, seasonTitle, homeTeam, awayTeam, gameStart, outcome: "scheduled"});
+        console.log(savedGame);
+    });
+
+    populateForm();
+</script>
+<script>
+
+</script>
+</html>
+

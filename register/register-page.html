@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="register-page.css" />
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register</h1>
+
+    <form>
+        <label>Username</label>
+        <input name="username" type="text">
+        <br>
+
+        <label>Password</label>
+        <input name="password" type="password">
+        <br>
+
+        <label>Height (inches)</label>
+        <input name="height" type="number">
+        <br>
+
+        <label>Weight (lbs)</label>
+        <input name="weight" type="number"/>
+        <br>
+
+        <label>Profile Picture</label>
+        <input name="picture" type="text"/>
+        <br>
+
+        <label>Show Biometrics</label>
+        <input name="biometrics" type="checkbox" />
+
+        <button>Submit</button>
+
+    </form>
+    <br>
+
+    <a href="../option-page/option-page.html">Back</a>
+    <a href="../index.html">Back</a>
+
+</body>
+<script src="/http-requests.js"></script>
+<script>
+    document.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const username = formData.get("username");
+        const password = formData.get("password");
+        const height = formData.get("height");
+        const weight = formData.get("weight");
+        const profilePicture = formData.get("picture");
+        const hideBiometrics = formData.get("biometrics") ? true : false;
+
+        const user = await sendUserRegistration(username, password, height, weight, profilePicture, hideBiometrics);
+
+        if (user) {
+            alert("Registration successful!");
+            localStorage.setItem('user', JSON.stringify(user));
+            document.location.href = '/option-page/option-page.html';
+        } else {
+            alert("Registration failed!");
+        }
+    });
+</script>
+</html>

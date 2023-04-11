@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="add-season.css">
+    <title>Season Scheduler</title>
+</head>
+<body>
+    <h1>Season Scheduler</h1>
+    <h2>Current Seasons</h2>
+    <table>
+        <thead>
+            <tr><th>Season Name</th></tr>
+        </thead>
+        <tbody id="seasonTableBody">
+        </tbody>
+    </table>
+
+    <h2>Add Season</h2>
+    <form>
+        <label>Season Name</label>
+        <input name="season" type="text">
+        <br>
+
+        <button>Submit</button>
+    </form>
+
+    <a href="../option-page/option-page.html">Back</a>
+    
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    async function populateTable(){
+        const seasons = await retrieveAllSeasons();
+        const seasonTableBody = document.getElementById("seasonTableBody")
+        seasonTableBody.innerHTML = '';
+        
+        for(const season of seasons){
+            const tr = seasonTableRowHTML(season)
+            seasonTableBody.innerHTML += tr;
+        }
+    }
+
+    populateTable();
+</script>
+<script>
+    document.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const season = formData.get("season");
+        let addedSeason = await sendSeason(season);
+
+        if(addedSeason) {
+            populateTable();
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,58 @@
+body {
+    background-color: black;
+    text-align: center;
+    font-size: large;
+    color: white;
+}
+
+a {
+    color: white;
+}
+
+form {
+    display: inline-block;
+    text-align: left;
+}
+
+input[type=text] {
+    padding: 5px;
+    border: 2px solid #ccc;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+input[type=text]:focus {
+    border-color: #333;
+}
+
+input[type=password] {
+    padding: 5px;
+    border: 2px solid #ccc;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+input[type=password]:focus {
+    border-color: #333;
+}
+
+input:first-of-type {
+    margin-top: 150%;
+}
+
+input:nth-of-type(2) {
+    margin-top: 7%;
+    margin-left: 1.5%;
+}
+
+button {
+    margin-top: 7%;
+    margin-left: 50%;
+    padding: 5px 15px;
+    background: #ccc;
+    border: 0 none;
+    cursor: pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+

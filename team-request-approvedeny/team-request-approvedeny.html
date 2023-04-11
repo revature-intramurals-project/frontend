@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="team-request-approvedeny.css" />
+    <title>Team Requests</title>
+</head>
+<body>
+    <h1></h1>
+    <table>
+        <thead>
+            <th>Request ID</th>
+            <th>Requester ID</th>
+            <th>Request Status</th>
+        </thead>
+        <tbody id="teamRequests">
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script src="../team-checkers.js"></script>
+<script>
+    (async function() {
+        let tbody = document.getElementById('teamRequests');
+        let team = await getTeamOfUser(JSON.parse(localStorage.getItem('user')).userId);
+
+        document.getElementsByTagName('h1')[0].innerHTML = `Team Requests for ${team.name}`;
+
+        let teamRequests = await retrieveTeamRequestsForTeam(team.name);
+        for (teamRequest of teamRequests) {
+            tbody.innerHTML += teamRequestTableRowHTML(teamRequest);
+        }
+    })();
+</script>
+<script>
+    async function approveTeamRequest(id) {
+        if (await sendApproveTeamRequest(id)) {
+            alert("Approve successful");
+            window.location.reload();
+        }
+    }
+
+    async function denyTeamRequest(id) {
+        if (await sendDenyTeamRequest(id)) {
+            alert("Deny successful");
+            window.location.reload();
+        }
+    }
+</script>
+</html>

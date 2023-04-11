@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="team-application.css" />
+    <title>Team Application</title>
+</head>
+<body>
+    <h1>Teams</h1>
+    <table>
+        <thead>
+            <th>Name</th>
+            <th>Sport</th>
+            <th>Team Status</th>
+            <th>Application Status</th>
+        </thead>
+        <tbody id="teamInfo">
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script src="../team-checkers.js"></script>
+<script>
+    async function populateTable() {
+        let teamRequests = await retrieveTeamRequestsForPlayer(JSON.parse(localStorage.getItem('user')).userId);
+
+        let teamRequestMap = {}
+        for (teamRequest of teamRequests) {
+            teamRequestMap[teamRequest.teamName] = { teamRequestStatus: teamRequest.teamRequestStatus };
+        }
+
+        teams = await retrieveAllTeams();
+
+        let tbody = document.getElementById('teamInfo');
+
+        for (team of teams) {
+            if (team.name in teamRequestMap) {
+                team.applicationStatus = teamRequestMap[team.name].teamRequestStatus
+            } else {
+                team.applicationStatus = 'not applied';
+            }
+            
+            tbody.innerHTML += teamApplicationTableRowHTML(team);
+        }
+    }
+
+    populateTable();
+</script>
+<script>
+    async function displayApplyMenu() {
+        let applicationMessage = document.createElement('div');
+        let tableElement = document.getElementsByTagName('table')[0];
+
+        if ((await getTeamOfUser(JSON.parse(localStorage.getItem('user')).userId))) {
+            applicationMessage.innerHTML = `<p><strong>You cannot apply for another team since you are part of team "${(await getTeamOfUser(JSON.parse(localStorage.getItem('user')).userId)).name}"</strong></p>`;
+        }
+        else if (await playerHasPendingTeamRequest(JSON.parse(localStorage.getItem('user')).userId)) {
+            applicationMessage.innerHTML = '<p><strong>You cannot apply for another team if a request is pending</strong></p>'
+        } else {
+            teams = await getUnappliedTeamsOfPlayer(JSON.parse(localStorage.getItem('user')).userId)
+
+            if (teams.length > 0) {
+                let options = teamApplyOptions(teams);
+
+                applicationMessage.innerHTML = options;
+            } else {
+                applicationMessage.innerHTML = '<p><strong>There are no teams you can apply for!</strong></p>';
+            }
+        }
+
+        tableElement.parentNode.insertBefore(applicationMessage, tableElement.nextSibling);
+    }
+    
+    displayApplyMenu();
+</script>
+<script>
+    async function applyForTeam(teamName) {
+        let addedTeamRequest = await addTeamRequestForPlayer(teamName, JSON.parse(localStorage.getItem('user')).userId);
+
+        if (addedTeamRequest) {
+            alert('Team Application Successful');
+            window.location.reload();
+        }
+    }
+</script>
+</html>

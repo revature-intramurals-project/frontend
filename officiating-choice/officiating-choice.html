@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="officiating-choice.css">
+    <title>Officiating Choice</title>
+</head>
+<body>
+    <h1>Officiating Choice</h1>
+
+    <h2>Register here to Officiate a Game</h2>
+    <form>
+        <label>Game ID</label>
+        <input name="registerGameId" type="number">
+        <br>
+
+        <button>Submit</button>
+    </form>
+
+    <h2>Remove yourself from Officiating a Game</h2>
+    <form>
+        <label>Game ID</label>
+        <input name="removeGameId" type="number">
+        <br>
+
+        <button>Submit</button>
+    </form>
+    <br>
+    
+    <a href="/option-page/option-page.html">Back</a>
+
+</body>
+<script src="/http-requests.js"></script>
+<script src="/dynamic-html.js"></script>
+<script>
+    document.getElementsByTagName('form')[0].addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        
+        const gameId = formData.get("registerGameId");
+        const userId = JSON.parse(localStorage.getItem('user')).userId;
+        
+        const result = await refereeApplyToOfficiate(gameId,userId);
+
+        if(result) {
+            alert("Application Successful!");
+        } else {
+            alert('Application Unsuccessful')
+        }
+    });
+</script>
+<script>
+    document.getElementsByTagName('form')[1].addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const gameId = formData.get("removeGameId");
+        const userId = JSON.parse(localStorage.getItem('user')).userId;
+
+        const result = await refereeRemoveOfficiate(gameId, userId);
+
+        if (result) {
+            alert("Removal Successful!");
+        } else {
+            alert("Removal Unsuccessful")
+        }
+    });
+</script>
+</html>

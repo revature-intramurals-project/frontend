@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="officiate-games.css">
+    <title>Officiate Games</title>
+</head>
+<body>
+    <h1>Games You've Chosen to Officiate</h1>
+    <table>
+        <thead>
+            <tr><th>Game ID</th><th>Date</th><th>Time EST</th><th>Venue</th><th>Home Team</th><th>Away Team</th><th>Outcome</th></tr>
+        </thead>
+        <tbody id="gameTableBody">
+
+        </tbody>
+    </table>
+
+    <a href="../option-page/option-page.html">Back</a>
+
+</body>
+<script src="../http-requests.js"></script>
+<script src="../dynamic-html.js"></script>
+<script>
+    (async function() {
+        let games = await retrieveAllGames();
+        const gamesAndReferees = await retrieveAllGamesAndReferees();
+
+        let refereeGameIds = new Set();
+        for (element of gamesAndReferees) {
+            if (element.userId === JSON.parse(localStorage.getItem('user')).userId) {
+                refereeGameIds.add(element.gameId);
+            }
+        }
+
+        games = games.filter(game => refereeGameIds.has(game.gameId))
+
+        const gameTableBody = document.getElementById("gameTableBody")
+
+        for(const game of games){
+            const tr = officiateGameTableRowHTML(game)
+            gameTableBody.insertAdjacentHTML("beforeend",tr);
+        }
+    })();
+</script>
+<script>
+    function PlayerStatList(playerObj){
+
+        return (`
+        <dl>
+            <dt>${playerObj.username}</dt>
+            <dd>Points<input id="${playerObj.username}-points" data-player='${JSON.stringify(playerObj)}' type="number" value="0"><button data-action="Add1" data-player='${JSON.stringify(playerObj)}'>Add 1 point</button><button data-action="Add2" data-player='${JSON.stringify(playerObj)}'>Add 2 Points</button><button data-action="Add3" data-player='${JSON.stringify(playerObj)}'>Add 3 Points</button></dd>
+            <dd>Fouls<input id="${playerObj.username}-fouls" data-player='${JSON.stringify(playerObj)}' type="number" value="0"><button data-action="AddFoul" data-player='${JSON.stringify(playerObj)}'>Add</button></dd>
+        </dl>
+
+        `);
+
+    }
+
+    async function renderPlayerLists(gameId, ht, at){
+        removePlayerLists();
+
+        const homePlayers = await retrieveRosterForTeam(ht);
+        const awayPlayers = await retrieveRosterForTeam(at);
+
+        document.getElementsByTagName('body')[0].innerHTML += 
+        `<section id="playerLists">
+            <button onclick="removePlayerLists()">Close</button>
+            <h3>Home Team</h3>
+            <div id="homeTeam">
+            </div>
+
+            <h3>Away Team</h3>
+            <div id="awayTeam">
+            </div>
+
+            <button onclick="save(${gameId})">Save</button>
+        </section>`
+
+        const homeTeam = document.getElementById("homeTeam");
+        const awayTeam = document.getElementById("awayTeam");
+
+        for(const p of homePlayers){
+            p.teamName = ht;
+            homeTeam.insertAdjacentHTML("beforeend", PlayerStatList(p));
+        }
+
+        for (const p of awayPlayers) {
+            p.teamName = at;
+            awayTeam.insertAdjacentHTML("beforeend", PlayerStatList(p));
+        }
+
+        document.addEventListener("click", buttonActions);
+
+        populateExistingScores(gameId);
+    }
+
+    async function populateExistingScores(gameId) {
+        let existingStats = await retrieveBasketballStatsByGameId(gameId);
+
+        let homePointInputs = document.querySelectorAll("#homeTeam input[id$='-points']");
+        let homeFoulInputs = document.querySelectorAll("#homeTeam input[id$='-fouls']");
+        
+        for (let i = 0; i < homePointInputs.length; i++) {
+            let data = JSON.parse(homePointInputs[i].dataset.player);
+            
+            for (const stat of existingStats) {
+                if (stat.userId === data.userId) {
+                    homePointInputs[i].value = stat.points;
+                    homeFoulInputs[i].value = stat.fouls;
+                }
+            }
+        }
+
+        let awayPointInputs = document.querySelectorAll("#awayTeam input[id$='-points']");
+        let awayFoulInputs = document.querySelectorAll("#awayTeam input[id$='-fouls']");
+
+        for (let i = 0; i < awayPointInputs.length; i++) {
+            let data = JSON.parse(awayPointInputs[i].dataset.player);
+            
+            for (const stat of existingStats) {
+                if (stat.userId === data.userId) {
+                    awayPointInputs[i].value = stat.points;
+                    awayFoulInputs[i].value = stat.fouls;
+                }
+            }
+        }
+    }
+
+    function buttonActions() {
+        const {action, player} = event.target.dataset
+
+        if (action && player) {
+            const playerObj = JSON.parse(player);
+
+            switch(action){
+                case "Add1": document.getElementById(`${playerObj.username}-points`).value -= Number(-1);break;
+                case "Add2": document.getElementById(`${playerObj.username}-points`).value -= Number(-2);break;
+                case "Add3": document.getElementById(`${playerObj.username}-points`).value -= Number(-3);break;
+                case "AddFoul": document.getElementById(`${playerObj.username}-fouls`).value -= Number(-1);break;
+            }
+        }
+    }
+
+    function save(gameId) {
+        try {
+            let homePointInputs = document.querySelectorAll("#homeTeam input[id$='-points']");
+            let homeFoulInputs = document.querySelectorAll("#homeTeam input[id$='-fouls']")
+            for (let i = 0; i < homePointInputs.length; i++) {
+                let data = JSON.parse(homePointInputs[i].dataset.player);
+                sendAddOrUpdateBasketballStat(gameId, data.userId, data.teamName, homePointInputs[i].value, homeFoulInputs[i].value);
+            }
+
+            let awayPointInputs = document.querySelectorAll("#awayTeam input[id$='-points']");
+            let awayFoulInputs = document.querySelectorAll("#awayTeam input[id$='-fouls']")
+            for (let i = 0; i < awayPointInputs.length; i++) {
+                let data = JSON.parse(awayPointInputs[i].dataset.player);
+                sendAddOrUpdateBasketballStat(gameId, data.userId, data.teamName, awayPointInputs[i].value, awayFoulInputs[i].value);
+            }
+        } catch (err) {
+            alert("Score update failed!");
+        }
+
+        alert("Score update success!");
+    }
+
+    function removePlayerLists() {
+        document.removeEventListener("click", buttonActions);
+
+        if (document.getElementById('playerLists')) {
+            document.getElementById('playerLists').parentNode.removeChild(document.getElementById('playerLists'));
+        }
+    }
+</script>
+</html>
+
